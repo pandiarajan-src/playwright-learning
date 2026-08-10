@@ -1,6 +1,7 @@
 import {test, expect} from '@playwright/test';
 import {LoginPage} from '../pages/LoginPage';
 import {InventoryPage} from '../pages/InventoryPage';
+import {LogoutPage} from '../pages/LogoutPage';
 
 test.describe('SauceDemo Login Tests', () => {
 
@@ -29,13 +30,33 @@ test.describe('SauceDemo Login Tests', () => {
     });
 
     test('adding an item updates the cart badge', async ({page}) => {
-        const loginPage = new LoginPage(page);
-        await loginPage.goToLoginPage();
-        await loginPage.login('standard_user', 'secret_sauce');
 
+        await page.goto('https://www.saucedemo.com/inventory.html');
         const inventoryPage = new InventoryPage(page);
         await inventoryPage.addItemToCart('Sauce Labs Backpack');
-        await expect(inventoryPage.cartBadge).toHaveText('1');
+        // scope the badge locator and assert by its text using .filter()
+        await expect(page.locator('.shopping_cart_badge').filter({ hasText: '1' })).toBeVisible();
+    });
+
+    test('adding couple of items updates the cart badge', async ({page}) => {
+
+        await page.goto('https://www.saucedemo.com/inventory.html');
+        const inventoryPage = new InventoryPage(page);
+        const itemsToAdd = ['Sauce Labs Backpack', 'Sauce Labs Bike Light'];
+
+        for (const item of itemsToAdd) {
+            await inventoryPage.addItemToCart(item);
+        }
+
+        // use locator scoping with .filter() instead of relying on indexes
+        await expect(page.locator('.shopping_cart_badge').filter({ hasText: String(itemsToAdd.length) })).toBeVisible();
+    });
+
+    test('user can logout', async ({page}) => {
+        await page.goto('https://www.saucedemo.com/inventory.html');
+        const logoutPage = new LogoutPage(page);
+        await logoutPage.logout();
+        await expect(page).toHaveURL('https://www.saucedemo.com/');
     });
 
     // runs after EVERY test — cleanup, screenshots on failure, etc.
