@@ -7,3 +7,5 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 Day-8/.playwright-cli/
+Day-8/.playwright-mcp/
+Day-8/tests/.playwright-mcp/
